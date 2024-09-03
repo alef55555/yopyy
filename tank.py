@@ -27,6 +27,8 @@ blue = (0, 0, 255)
 black = (0, 0, 0)
 yellow = (255, 255, 0)
 
+
+
 def createTank(type):
     if type == "hero":
         return Tank(300, 200,"tank/hero/hero" )
@@ -180,8 +182,9 @@ bullets = []
 blocks = []
 tanks = []
 
-tanks.append(tank1)
 tanks.append(tank2)
+tanks.append(tank1)
+
 
 blocks.append(Block(270,250, 120,40, "tank/wall1.png"))
 blocks.append(Block(10,200, 120,40,"tank/wall1.png"))
@@ -257,7 +260,7 @@ while running:
         screen.blit(tmp, [block.x, block.y])
         pygame.draw.rect(screen, green, (block.x, block.y, block.width, block.height), 1)
         for tank in tanks:
-            # print(hitTest(tank.x, tank.y, tank.x+tank.width, tank.y+tank.height, block.x, block.y, block.x+block.width, block.y+block.height))
+             #print(hitTest(tank.x, tank.y, tank.x+tank.width, tank.y+tank.height, block.x, block.y, block.x+block.width, block.y+block.height))
             if hitTest(tank.x, tank.y, tank.x+tank.width, tank.y+tank.height, block.x, block.y, block.x+block.width, block.y+block.height) == True:
                 if tank.direct == 0:
                     tank.y = block.y+block.height+2
@@ -267,19 +270,27 @@ while running:
                     tank.y = block.y-tank.height-2
                 elif tank.direct == 3:
                     tank.x = block.x+block.width+2
-            for otherTank in tanks:
-                if tank == otherTank:
-                    continue
-                print("tanks", hitTest(tank.x, tank.y, tank.x + tank.width, tank.y + tank.height, otherTank.x, otherTank.y, otherTank.x + otherTank.width, otherTank.y + otherTank.height))
-                if hitTest(tank.x, tank.y, tank.x+tank.width, tank.y+tank.height, otherTank.x, otherTank.y, otherTank.x+otherTank.width, otherTank.y+otherTank.height) == True:
-                    if tank.direct == 0:
-                        tank.y = otherTank.y + otherTank.height + 2
-                    elif tank.direct == 1:
-                        tank.x = otherTank.x - otherTank.width - 2
-                    elif tank.direct == 2:
-                        tank.y = otherTank.y - otherTank.height - 2
-                    elif tank.direct == 3:
-                        tank.x = otherTank.x + otherTank.width + 2
+
+
+
+    for i in range(len(tanks)):
+        for j in range(i, len(tanks)):
+            tank = tanks[i]
+            otherTank = tanks[j]
+            if tanks[i] == tanks[j]:
+                continue
+            print("tanks", hitTest(tank.x, tank.y, tank.x + tank.width, tank.y + tank.height, otherTank.x, otherTank.y, otherTank.x + otherTank.width, otherTank.y + otherTank.height))
+            if hitTest(tank.x, tank.y, tank.x+tank.width, tank.y+tank.height, otherTank.x, otherTank.y, otherTank.x+otherTank.width, otherTank.y+otherTank.height) == True:
+                if tank.direct == 0:
+                    tank.y = otherTank.y + otherTank.height + 2
+                elif tank.direct == 1:
+                    tank.x = otherTank.x - otherTank.width - 2
+                elif tank.direct == 2:
+                    tank.y = otherTank.y - otherTank.height - 2
+                elif tank.direct == 3:
+                    tank.x = otherTank.x + otherTank.width + 2
+
+
 
     bulletsToDelete = []
         
