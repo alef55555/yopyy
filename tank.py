@@ -7,14 +7,19 @@ FPS = 60 # частота кадров в секунду
 
 # создаем игру и окно
 pygame.init()
+pygame.font.init()
+pygame.font.Font()
 pygame.mixer.init()  # для звука
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Tanks")
 background = pygame.Surface((300, 300))
 background.fill(pygame.Color('#000000'))
 clock = pygame.time.Clock()
+font = pygame.font.SysFont('Arial', 20)
 
-
+def drawText(surface,text,font,color,x,y):
+    textSurface = font.render(text,True,color)
+    surface.blit(textSurface,(x,y))
 white = (255, 255, 255)
 red = (255, 0, 0)
 green = (0, 255, 0)
@@ -66,6 +71,22 @@ class Block:
             return self.frames[0]
         else:
             return pygame.Surface((0,0))
+
+class HealthBar():
+    def __init__(self,x,y,w,h,maxHp):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+        self.hp = maxHp
+        self.maxHp = maxHp
+    def drawHp(self, surface):
+        lvlHp = self.hp/self.maxHp
+        pygame.draw.rect(surface, red, (self.x, self.y, self.w, self.h))
+        pygame.draw.rect(surface, green, (self.x, self.y, self.w * lvlHp, self.h))
+
+
+
 
 class Tank:
     speed = 1
@@ -148,11 +169,12 @@ class Tank:
                 return Bullet(self.x+7,self.y+17,3,3,self.direct)
             elif self.direct == 3:
                 return Bullet(self.x-5,self.y+6,3,3,self.direct)  
-            
 
 
 tank2 = createTank("hero")
 tank1 = createTank("enemy1")
+healthBar = HealthBar(520,15,100,20,200)
+
 
 bullets = []    
 blocks = []
@@ -161,13 +183,13 @@ tanks = []
 tanks.append(tank1)
 tanks.append(tank2)
 
-blocks.append(Block(200,150, 120,40, "tank/wall1.png"))
-blocks.append(Block(10,36, 120,40,"tank/wall1.png"))
-blocks.append(Block(125,67, 120,40, "tank/wall1.png"))
-blocks.append(Block(0,0, WIDTH,2, ""))
-blocks.append(Block(0,0, 2,HEIGHT, ""))
+blocks.append(Block(270,250, 120,40, "tank/wall1.png"))
+blocks.append(Block(10,200, 120,40,"tank/wall1.png"))
+blocks.append(Block(300,400, 120,40, "tank/wall1.png"))
+blocks.append(Block(0,50, WIDTH,2, ""))
+blocks.append(Block(0,50, 2,HEIGHT, ""))
 blocks.append(Block(0,HEIGHT-2, WIDTH,10, ""))
-blocks.append(Block(WIDTH-2,0, 10,HEIGHT, ""))
+blocks.append(Block(WIDTH-2,50, 10,HEIGHT, ""))
 
 def hitTest(x,y,x1,y1,x2,y2,x3,y3):
     if x3 < x or y3 < y or x2 > x1 or y2 > y1:
@@ -212,13 +234,16 @@ while running:
         tank2.move(0)
     elif keys[pygame.K_s] and tank2.y + tank2.height < HEIGHT:
         tank2.move(2)
-    elif keys[pygame.K_f]:                   
+    elif keys[pygame.K_f]:
         b = tank2.fireBullet()
         if (b):
             bullets.append(b)        
     
     #выводим кадры, обновляем экран
     screen.fill(black)
+    healthBar.drawHp(screen)
+    drawText(screen,"HP",font,white,490,13)
+
     
     for tank in tanks:
         tank.update()
@@ -255,26 +280,7 @@ while running:
                         tank.y = otherTank.y - otherTank.height - 2
                     elif tank.direct == 3:
                         tank.x = otherTank.x + otherTank.width + 2
-#            if hitTest(tank1.x, tank1.y, tank1.x+tank1.width, tank1.y+tank1.height, tank2.x, tank2.y, tank2.x+tank2.width, tank2.y+tank2.height) == True:
- #               if tank1.direct == 0:
-  #                  tank1.y = tank1.y
-   #           elif tank1.direct == 2:
-    #                tank1.y = tank1.y
-     #           elif tank1.direct == 3:
-      #              tank1.x = tank1.x
-       #     if hitTest(tank1.x, tank1.y, tank1.x+tank1.width, tank1.y+tank1.height, tank2.x, tank2.y, tank2.x+tank2.width, tank2.y+tank2.height) == True:
-        #        if tank2.direct == 0:
-         #           tank2.y = tank2.y
-          #      elif tank2.direct == 1:
-           #         tank2.x = tank2.x
-            #    elif tank2.direct == 2:
-             #       tank2.y = tank2.y
-              #  elif tank2.direct == 3:
-               #     tank2.x = tank2.x
-                
-        
-        
-        
+
     bulletsToDelete = []
         
     for bullet in bullets:
@@ -287,14 +293,23 @@ while running:
             bullet.x -= bullet.speed
         elif bullet.direct == 1:
             bullet.x += bullet.speed
-        for block in blocks:    
+        for block in blocks:
             if (hitTest(bullet.x, bullet.y, bullet.x+bullet.width, bullet.y+bullet.height,block.x, block.y , block.x+block.width, block.y+block.height)):
                 bulletsToDelete.append(bullet)
+        for tank in tanks:
+            if (hitTest(bullet.x, bullet.y, bullet.x + bullet.width, bullet.y + bullet.height, tank.x, tank.y,tank.x + tank.width, tank.y + tank.height)):
+                bulletsToDelete.append(bullet)
+            if (hitTest(bullet.x, bullet.y, bullet.x + bullet.width, bullet.y + bullet.height, tank2.x, tank2.y,tank2.x + tank2.width, tank2.y + tank2.height)):
+                healthBar.hp -= 34
+            if healthBar.hp <= 0:
+                tanks.remove(tank2)
+
+
         
         
     for bullet in bulletsToDelete:
         bullets.remove(bullet)
-    
 
-           
+
+
     pygame.display.flip()
